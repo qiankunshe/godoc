@@ -1,5 +1,7 @@
 # Linux 下安装和配置 MinDoc
 
+**如果你的服务器上没有安装golang程序请手动设置一个环境变量如下：键名为 ZONEINFO，值为MinDoc跟目录下的/lib/time/zoneinfo.zip 绝对路径。**
+
 **第一步 下载可执行文件**
 
 请从 [https://github.com/lifei6671/godoc/releases](https://github.com/lifei6671/godoc/releases)  下载最新版的可执行文件，一般文件名为 godoc_linux_amd.tar.gz .
@@ -81,8 +83,6 @@ server {
     
     #此处配置你的访问日志，请手动创建该目录：
     access_log  /var/log/nginx/webhook.iminho.me/access.log;
-
-    root "/var/go/src/go-git-webhook";
 
     location ~ .*\.(ttf|woff2|eot|otf|map|swf|svg|gif|jpg|jpeg|bmp|png|ico|txt|js|css)$ {
     

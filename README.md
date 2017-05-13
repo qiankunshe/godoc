@@ -1,5 +1,7 @@
 # MinDoc 简介
 
+[![Build Status](https://travis-ci.org/lifei6671/godoc.svg?branch=master)](https://travis-ci.org/lifei6671/godoc)
+
 MinDoc 是一款针对IT团队开发的简单好用的文档管理系统。 
 
 MinDoc 的前身是 SmartWiki 文档系统。SmartWiki 是基于 PHP 框架 laravel 开发的一款文档管理系统。因 PHP 的部署对普通用户来说太复杂，所以改用 Golang 开发。可以方便用户部署和实用。
@@ -9,6 +11,8 @@ MinDoc 的前身是 SmartWiki 文档系统。SmartWiki 是基于 PHP 框架 lara
 可以用来储存日常接口文档，数据库字典，手册说明等文档。内置项目管理，用户管理，权限管理等功能，能够满足大部分中小团队的文档管理需求。
 
 # 安装与使用
+
+**如果你的服务器上没有安装golang程序请手动设置一个环境变量如下：键名为 ZONEINFO，值为MinDoc跟目录下的/lib/time/zoneinfo.zip 。**
 
 **Windows 教程:** [https://github.com/lifei6671/godoc/blob/master/README_WIN.md](https://github.com/lifei6671/godoc/blob/master/README_WIN.md)
 
@@ -197,4 +201,4 @@ docker run -p 8181:8181 -e MYSQL_PORT_3306_TCP_ADDR=127.0.0.1 -e MYSQL_PORT_3306
 
 # 关于作者
 
-一个不纯粹的PHPer，一个不自由的 golanger 。
+一个不纯粹的PHPer，一个不自由的 gopher 。
