@@ -8,17 +8,17 @@
     <title>{{.Model.BookName}} - Powered by MinDoc</title>
 
     <!-- Bootstrap -->
-    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet">
-    <link href="/static/jstree/3.3.4/themes/default/style.min.css" rel="stylesheet">
+    <link href="{{cdncss "/static/bootstrap/css/bootstrap.min.css"}}" rel="stylesheet">
+    <link href="{{cdncss "/static/font-awesome/css/font-awesome.min.css"}}" rel="stylesheet">
+    <link href="{{cdncss "/static/jstree/3.3.4/themes/default/style.min.css"}}" rel="stylesheet">
 
-    <link href="/static/nprogress/nprogress.css" rel="stylesheet">
+    <link href="{{cdncss "/static/nprogress/nprogress.css"}}" rel="stylesheet">
     <link href="/static/css/kancloud.css" rel="stylesheet">
     <link href="/static/css/jstree.css" rel="stylesheet">
     {{if eq .Model.Editor "markdown"}}
-    <link href="/static/editor.md/css/editormd.preview.css" rel="stylesheet">
+    <link href="{{cdncss "/static/editor.md/css/editormd.preview.css"}}" rel="stylesheet">
     {{else}}
-    <link href="/static/highlight/styles/zenburn.css" rel="stylesheet">
+    <link href="{{cdncss "/static/highlight/styles/zenburn.css"}}" rel="stylesheet">
     {{end}}
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -28,12 +28,12 @@
     <![endif]-->
 </head>
 <body>
-<div class="m-manual manual-reader">
+<div class="m-manual manual-mode-view manual-reader">
     <header class="navbar navbar-static-top manual-head" role="banner">
         <div class="container-fluid">
             <div class="navbar-header pull-left manual-title">
                 <span class="slidebar" id="slidebar"><i class="fa fa-align-justify"></i></span>
-                {{.Model.BookName}}
+                <a href="{{urlfor "DocumentController.Index" ":key" .Model.Identify}}" title="{{.Model.BookName}}" class="book-title">{{.Model.BookName}}</a>
                 <span style="font-size: 12px;font-weight: 100;"></span>
             </div>
             <div class="navbar-header pull-right manual-menu">
@@ -53,7 +53,7 @@
                         {{if eq .Model.PrivatelyOwned 0}}
                         <li><a href="javascript:" data-toggle="modal" data-target="#shareProject">项目分享</a> </li>
                         <li role="presentation" class="divider"></li>
-                        {{/*<li><a href="https://wiki.iminho.me/export/1" target="_blank">项目导出</a> </li>*/}}
+                        <li><a href="{{urlfor "DocumentController.Export" ":key" .Model.Identify "output" "pdf"}}" target="_blank">项目导出PDF</a> </li>
                         {{end}}
 
                         <li><a href="{{urlfor "HomeController.Index"}}" title="返回首页">返回首页</a> </li>
@@ -67,6 +67,7 @@
             <div class="manual-tab">
                 <div class="tab-navg">
                     <span data-mode="view" class="navg-item active"><i class="fa fa-align-justify"></i><b class="text">目录</b></span>
+                    <span data-mode="search" class="navg-item"><i class="fa fa-search"></i><b class="text">搜索</b></span>
                 </div>
                 <div class="tab-util">
                     <span class="manual-fullscreen-switch">
@@ -77,9 +78,31 @@
                 <div class="tab-wrap">
                     <div class="tab-item manual-catalog">
                         <div class="catalog-list read-book-preview" id="sidebar">
-{{.Result}}
+                        {{.Result}}
                         </div>
 
+                    </div>
+                    <div class="tab-item manual-search">
+                        <div class="search-container">
+                            <div class="search-form">
+                                <form id="searchForm" action="{{urlfor "DocumentController.Search" ":key" .Model.Identify}}" method="post">
+                                    <div class="form-group">
+                                        <input type="search" placeholder="请输入搜索关键字" class="form-control" name="keyword">
+                                        <button type="submit" class="btn btn-default btn-search" id="btnSearch">
+                                            <i class="fa fa-search"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="search-result">
+                                <div class="search-empty">
+                                    <i class="fa fa-search-plus" aria-hidden="true"></i>
+                                    <b class="text">暂无相关搜索结果！</b>
+                                </div>
+                                <ul class="search-list" id="searchList">
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -104,12 +127,12 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
                 <div class="article-content">
                     <div class="article-body  {{if eq .Model.Editor "markdown"}}markdown-body editormd-preview-container{{else}}editor-content{{end}}"  id="page-content">
                         {{.Content}}
                     </div>
+                    <!--
                     {{/*
                     {{if .Model.IsDisplayComment}}
                     <div id="articleComment" class="m-comment">
@@ -155,7 +178,7 @@
                         </div>
                     </div>
                     {{end}}
-*/}}
+*/}}-->
                 </div>
 
             </div>
@@ -174,6 +197,11 @@
                 <h4 class="modal-title" id="myModalLabel">项目分享</h4>
             </div>
             <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12 text-center" style="padding-bottom: 15px;">
+                        <img src="{{urlfor "DocumentController.QrCode" ":key" .Model.Identify}}" alt="扫一扫手机阅读" />
+                    </div>
+                </div>
                 <div class="form-group">
                     <label for="password" class="col-sm-2 control-label">项目地址</label>
                     <div class="col-sm-10">
@@ -188,12 +216,13 @@
         </div>
     </div>
 </div>
-<script src="/static/jquery/1.12.4/jquery.min.js"></script>
-<script src="/static/bootstrap/js/bootstrap.min.js"></script>
-<script src="/static/jstree/3.3.4/jstree.min.js" type="text/javascript"></script>
-<script type="text/javascript" src="/static/nprogress/nprogress.js"></script>
-<script type="text/javascript" src="/static/highlight/highlight.js"></script>
-<script type="text/javascript" src="/static/highlight/highlightjs-line-numbers.min.js"></script>
+<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
+<script src="{{cdnjs "/static/js/jquery.form.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js"}}" type="text/javascript"></script>
+<script type="text/javascript" src="{{cdnjs "/static/nprogress/nprogress.js"}}"></script>
+<script type="text/javascript" src="{{cdnjs "/static/highlight/highlight.js"}}"></script>
+<script type="text/javascript" src="{{cdnjs "/static/highlight/highlightjs-line-numbers.min.js"}}"></script>
 <script type="text/javascript">
     var events = $("body");
     var catalog = null;
@@ -203,6 +232,52 @@
         });
 
         hljs.initLineNumbersOnLoad();
+    }
+    function loadDocument($url,$id) {
+        $.ajax({
+            url : $url,
+            type : "GET",
+            beforeSend :function (xhr) {
+                var body = events.data('body_' + $id);
+                var title = events.data('title_' + $id);
+                var doc_title = events.data('doc_title_' + $id);
+
+                if(body && title && doc_title){
+
+                    $("#page-content").html(body);
+                    $("title").text(title);
+                    $("#article-title").text(doc_title);
+
+                    events.trigger('article.open',$url,true);
+
+                    return false;
+                }
+                NProgress.start();
+            },
+            success : function (res) {
+                if(res.errcode === 0){
+                    var body = res.data.body;
+                    var doc_title = res.data.doc_title;
+                    var title = res.data.title;
+
+                    $("#page-content").html(body);
+                    $("title").text(title);
+                    $("#article-title").text(doc_title);
+
+                    events.data('body_' + $id,body);
+                    events.data('title_' + $id,title);
+                    events.data('doc_title_' + $id,doc_title);
+
+                    events.trigger('article.open',$url,false);
+
+                }else{
+                    layer.msg("加载失败");
+                }
+            },
+            complete : function () {
+                NProgress.done();
+            }
+        });
     }
 
     $(function () {
@@ -229,50 +304,8 @@
             if(url === window.location.href){
                 return false;
             }
-            $.ajax({
-                url : url,
-                type : "GET",
-                beforeSend :function (xhr) {
-                    var body = events.data('body_' + selected.node.id);
-                    var title = events.data('title_' + selected.node.id);
-                    var doc_title = events.data('doc_title_' + selected.node.id);
+            loadDocument(url,selected.node.id);
 
-                    if(body && title && doc_title){
-
-                        $("#page-content").html(body);
-                        $("title").text(title);
-                        $("#article-title").text(doc_title);
-
-                        events.trigger('article.open',url,true);
-
-                        return false;
-                    }
-                    NProgress.start();
-                },
-                success : function (res) {
-                    if(res.errcode === 0){
-                        var body = res.data.body;
-                        var doc_title = res.data.doc_title;
-                        var title = res.data.title;
-
-                        $("#page-content").html(body);
-                        $("title").text(title);
-                        $("#article-title").text(doc_title);
-
-                        events.data('body_' + selected.node.id,body);
-                        events.data('title_' + selected.node.id,title);
-                        events.data('doc_title_' + selected.node.id,doc_title);
-
-                        events.trigger('article.open',url,false);
-
-                    }else{
-                        layer.msg("加载失败");
-                    }
-                },
-                complete : function () {
-                    NProgress.done();
-                }
-            });
         });
 
         $("#slidebar").on("click",function () {
@@ -305,6 +338,53 @@
             }
             initHighlighting();
 
+        });
+
+        $(".navg-item[data-mode]").on("click",function () {
+            var mode = $(this).data('mode');
+            $(this).siblings().removeClass('active').end().addClass('active');
+           $(".m-manual").removeClass("manual-mode-view manual-mode-collect manual-mode-search").addClass("manual-mode-" + mode);
+        });
+
+        /**
+         * 项目内搜索
+         */
+        $("#searchForm").ajaxForm({ 
+            beforeSubmit : function () {
+                var keyword = $.trim($("#searchForm").find("input[name='keyword']").val());
+                if(keyword === ""){
+                    $(".search-empty").show();
+                    $("#searchList").html("");
+                    return false;
+                }
+                $("#btnSearch").attr("disabled","disabled").find("i").removeClass("fa-search").addClass("loading");
+            },
+            success :function (res) {
+                var html = "";
+                if(res.errcode === 0){
+                    for(var i in res.data){
+                        var item = res.data[i];
+                        html += '<li><a href="javascript:;" title="'+ item.doc_name +'" data-id="'+ item.doc_id+'"> '+ item.doc_name +' </a></li>';
+                    }
+                }
+                if(html !== ""){
+                    $(".search-empty").hide();
+                }else{
+                    $(".search-empty").show();
+                }
+                $("#searchList").html(html);
+            },
+            complete : function () {
+                $("#btnSearch").removeAttr("disabled").find("i").removeClass("loading").addClass("fa-search");
+            }
+        });
+
+        $("#searchList").on("click","a",function () {
+           var id = $(this).attr("data-id");
+           var url = "{{urlfor "DocumentController.Read" ":key" .Model.Identify ":id" ""}}/" + id;
+           $(this).parent("li").siblings().find("a").removeClass("active");
+           $(this).addClass("active");
+           loadDocument(url,id);
         });
     });
 </script>

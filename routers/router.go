@@ -25,6 +25,8 @@ func init()  {
 	beego.Router("/manager/comments", &controllers.ManagerController{},"*:Comments")
 	beego.Router("/manager/books/token", &controllers.ManagerController{},"post:CreateToken")
 	beego.Router("/manager/setting",&controllers.ManagerController{},"*:Setting")
+	beego.Router("/manager/books/transfer", &controllers.ManagerController{},"post:Transfer")
+	beego.Router("/manager/books/open", &controllers.ManagerController{},"post:PrivatelyOwned")
 
 	beego.Router("/setting", &controllers.SettingController{},"*:Index")
 	beego.Router("/setting/password", &controllers.SettingController{},"*:Password")
@@ -49,6 +51,7 @@ func init()  {
 	beego.Router("/book/setting/token", &controllers.BookController{},"post:CreateToken")
 	beego.Router("/book/setting/delete", &controllers.BookController{},"post:Delete")
 
+	beego.Router("/api/attach/remove/", &controllers.DocumentController{},"post:RemoveAttachment")
 	beego.Router("/api/:key/edit/?:id", &controllers.DocumentController{},"*:Edit")
 	beego.Router("/api/upload",&controllers.DocumentController{},"post:Upload")
 	beego.Router("/api/:key/create",&controllers.DocumentController{},"post:Create")
@@ -58,6 +61,9 @@ func init()  {
 
 	beego.Router("/docs/:key", &controllers.DocumentController{},"*:Index")
 	beego.Router("/docs/:key/:id", &controllers.DocumentController{},"*:Read")
+	beego.Router("/docs/:key/search", &controllers.DocumentController{},"post:Search")
+	beego.Router("/export/:key", &controllers.DocumentController{},"*:Export")
+	beego.Router("/qrcode/:key.png",&controllers.DocumentController{},"get:QrCode")
 
 	beego.Router("/attach_files/:key/:attach_id",&controllers.DocumentController{},"get:DownloadAttachment")
 

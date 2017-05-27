@@ -36,6 +36,7 @@ func (c *SettingController) Index()  {
 		if err := member.Update(); err != nil {
 			c.JsonResult(602, err.Error())
 		}
+		c.SetMember(*member)
 		c.JsonResult(0, "ok")
 	}
 }
@@ -131,8 +132,8 @@ func (c *SettingController) Upload() {
 		logs.Error("ImageCopyFromFile => ",err)
 		c.JsonResult(6001,"头像剪切失败")
 	}
-
-	err = graphics.SaveImage(filePath,subImg)
+	err = graphics.ImageResizeSaveFile(subImg,120,120,filePath)
+	//err = graphics.SaveImage(filePath,subImg)
 
 	if err != nil {
 		logs.Error("保存文件失败 => ",err.Error())

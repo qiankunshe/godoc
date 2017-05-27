@@ -134,6 +134,14 @@ func (m *Book) FindByFieldFirst(field string,value interface{})(*Book,error) {
 
 }
 
+func (m *Book) FindByIdentify(identify string) (*Book,error) {
+	o := orm.NewOrm()
+
+	err := o.QueryTable(m.TableNameWithPrefix()).Filter("identify",identify).One(m)
+
+	return m,err
+}
+
 //分页查询指定用户的项目
 func (m *Book) FindToPager(pageIndex, pageSize ,memberId int) (books []*BookResult,totalCount int,err error){
 
@@ -146,8 +154,8 @@ func (m *Book) FindToPager(pageIndex, pageSize ,memberId int) (books []*BookResu
 	qb.Select("COUNT(book.book_id) AS total_count").
 		From(m.TableNameWithPrefix() + " AS book").
 		LeftJoin(relationship.TableNameWithPrefix() + " AS rel").
-		On("book.book_id=rel.book_id").
-		Where("rel.member_id=?")
+		On("book.book_id=rel.book_id AND rel.member_id = ?").
+		Where("rel.relationship_id > 0")
 
 	err = o.Raw(qb.String(),memberId).QueryRow(&totalCount)
 
@@ -160,15 +168,15 @@ func (m *Book) FindToPager(pageIndex, pageSize ,memberId int) (books []*BookResu
 
 	qb2.Select("book.*,rel.member_id","rel.role_id","m.account as create_name").
 		From(m.TableNameWithPrefix() + " AS book").
-		LeftJoin(relationship.TableNameWithPrefix() + " AS rel").
-		On("book.book_id=rel.book_id").
-		LeftJoin(NewMember().TableNameWithPrefix() + " AS m").On("rel.member_id=m.member_id AND rel.role_id=0").
-		Where("rel.member_id=?").
+		LeftJoin(relationship.TableNameWithPrefix() + " AS rel").On("book.book_id=rel.book_id AND rel.member_id = ?").
+		LeftJoin(relationship.TableNameWithPrefix() + " AS rel1").On("book.book_id=rel1.book_id  AND rel1.role_id=0").
+		LeftJoin(NewMember().TableNameWithPrefix() + " AS m").On("rel1.member_id=m.member_id").
+		Where("rel.relationship_id > 0").
 		OrderBy("book.order_index DESC ","book.book_id").Desc().
 		Limit(pageSize).
 		Offset(offset)
 
-	//logs.Info("",qb2.String())
+	logs.Info("",qb2.String())
 	_,err = o.Raw(qb2.String(),memberId).QueryRows(&books)
 	if err != nil {
 		logs.Error("分页查询项目列表 => ",err)
@@ -251,6 +259,7 @@ func (m *Book) ThoroughDeleteBook(id int) error {
 
 }
 
+//分页查找系统首页数据.
 func (m *Book) FindForHomeToPager(pageIndex, pageSize ,member_id int) (books []*BookResult,totalCount int,err error) {
 	o := orm.NewOrm()
 

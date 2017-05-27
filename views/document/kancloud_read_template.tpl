@@ -8,10 +8,10 @@
     <title>编辑文档 - Powered by MinDoc</title>
 
     <!-- Bootstrap -->
-    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet">
-    <link href="/static/jstree/3.3.4/themes/default/style.min.css" rel="stylesheet">
-    <link href="/static/css/kancloud.css" rel="stylesheet">
+    <link href="{{cdncss "/static/bootstrap/css/bootstrap.min.css"}}" rel="stylesheet">
+    <link href="{{cdncss "/static/font-awesome/css/font-awesome.min.css"}}" rel="stylesheet">
+    <link href="{{cdncss "/static/jstree/3.3.4/themes/default/style.min.css"}}" rel="stylesheet">
+    <link href="{{cdncss "/static/css/kancloud.css"}}" rel="stylesheet">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -25,7 +25,7 @@
         <div class="container-fluid">
             <div class="navbar-header pull-left manual-title">
                 <span class="slidebar" id="slidebar"><i class="fa fa-align-justify"></i></span>
-                SmartWiki帮助手册
+
                 <span style="font-size: 12px;font-weight: 100;">v 0.1.1</span>
             </div>
             <div class="navbar-header pull-right manual-menu">
@@ -61,7 +61,7 @@
             </div>
             <div class="m-copyright">
                 <p>
-                    本文档使用 <a href="https://doc.iminho.me" target="_blank">MinDoc</a> 发布
+                    本文档使用 <a href="https://www.iminho.me" target="_blank">MinDoc</a> 发布
                 </p>
             </div>
         </div>
@@ -168,9 +168,9 @@
         </div>
     </div>
 </div>
-<script src="/static/jquery/1.12.4/jquery.min.js"></script>
-<script src="/static/bootstrap/js/bootstrap.min.js"></script>
-<script src="/static/jstree/3.3.4/jstree.min.js" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
+<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js"}}" type="text/javascript"></script>
 <script type="text/javascript">
     $(function () {
         $("#sidebar").jstree({

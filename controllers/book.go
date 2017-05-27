@@ -161,6 +161,7 @@ func (c *BookController) SaveBook()  {
 	c.JsonResult(0,"ok",bookResult)
 }
 
+//设置项目私有状态.
 func (c *BookController) PrivatelyOwned()  {
 
 	status := c.GetString("status")
@@ -184,7 +185,6 @@ func (c *BookController) PrivatelyOwned()  {
 	if bookResult.RoleId != conf.BookFounder {
 		c.JsonResult(6002,"权限不足")
 	}
-	fmt.Printf("%+v",bookResult)
 
 	book,err := models.NewBook().Find(bookResult.BookId)
 
@@ -192,8 +192,6 @@ func (c *BookController) PrivatelyOwned()  {
 		c.JsonResult(6005,"项目不存在")
 	}
 	book.PrivatelyOwned = state
-
-	logs.Info("",state,status)
 
 	err = book.Update()
 
@@ -507,23 +505,38 @@ func (c *BookController) Release() {
 	c.Prepare()
 
 	identify := c.GetString("identify")
-	book ,err := models.NewBookResult().FindByIdentify(identify,c.Member.MemberId)
 
-	if err != nil {
-		if err == models.ErrPermissionDenied {
-			c.JsonResult(6001,"权限不足")
-		}
-		if err == orm.ErrNoRows {
-			c.JsonResult(6002,"项目不存在")
-		}
-		beego.Error(err)
-		c.JsonResult(6003,"未知错误")
-	}
-	if book.RoleId != conf.BookAdmin && book.RoleId != conf.BookFounder && book.RoleId != conf.BookEditor{
-		c.JsonResult(6003,"权限不足")
-	}
+	book_id := 0
 
-	go models.NewDocument().ReleaseContent(book.BookId)
+	if c.Member.Role == conf.MemberSuperRole {
+		book,err := models.NewBook().FindByFieldFirst("identify",identify)
+		if err != nil {
+
+		}
+		book_id = book.BookId
+	}else {
+		book, err := models.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+
+		if err != nil {
+			if err == models.ErrPermissionDenied {
+				c.JsonResult(6001, "权限不足")
+			}
+			if err == orm.ErrNoRows {
+				c.JsonResult(6002, "项目不存在")
+			}
+			beego.Error(err)
+			c.JsonResult(6003, "未知错误")
+		}
+		if book.RoleId != conf.BookAdmin && book.RoleId != conf.BookFounder && book.RoleId != conf.BookEditor {
+			c.JsonResult(6003, "权限不足")
+		}
+		book_id = book.BookId
+	}
+	go func(identify string) {
+		models.NewDocument().ReleaseContent(book_id)
+
+
+	}(identify)
 
 	c.JsonResult(0,"发布任务已推送到任务队列，稍后将在后台执行。")
 }
@@ -597,6 +610,7 @@ func (c *BookController) SaveSort() {
 	}
 	c.JsonResult(0,"ok")
 }
+
 
 func (c *BookController) IsPermission() (*models.BookResult,error) {
 	identify := c.GetString("identify")

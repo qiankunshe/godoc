@@ -140,6 +140,18 @@ function pushDocumentCategory($node) {
     }
     window.documentCategory.push($node);
 }
+/**
+ * 将数据重置到Vue列表中
+ * @param $lists
+ */
+function pushVueLists($lists) {
+
+    window.vueApp.lists = [];
+    for(var j in $lists){
+        var item = $lists[j];
+        window.vueApp.lists.push(item);
+    }
+}
 
 //实现小提示
 $("[data-toggle='tooltip']").hover(function () {
