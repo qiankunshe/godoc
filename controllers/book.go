@@ -19,6 +19,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/lifei6671/godoc/conf"
 	"github.com/lifei6671/godoc/graphics"
+	"github.com/lifei6671/godoc/commands"
 )
 
 type BookController struct {
@@ -278,7 +279,7 @@ func (c *BookController) UploadCover()  {
 
 	fileName := "cover_" +  strconv.FormatInt(time.Now().UnixNano(), 16)
 
-	filePath := "uploads/" + time.Now().Format("200601") + "/" + fileName + ext
+	filePath := filepath.Join("uploads",time.Now().Format("200601"),fileName  + ext)
 
 	path := filepath.Dir(filePath)
 
@@ -290,6 +291,9 @@ func (c *BookController) UploadCover()  {
 		logs.Error("",err)
 		c.JsonResult(500,"图片保存失败")
 	}
+	defer func(filePath string) {
+		os.Remove(filePath)
+	}(filePath)
 
 	//剪切图片
 	subImg,err := graphics.ImageCopyFromFile(filePath,x,y,width,height)
@@ -298,6 +302,9 @@ func (c *BookController) UploadCover()  {
 		logs.Error("graphics.ImageCopyFromFile => ",err)
 		c.JsonResult(500,"图片剪切")
 	}
+
+	filePath = filepath.Join(commands.WorkingDirectory,"uploads",time.Now().Format("200601"),fileName + "_small" + ext)
+
 	//生成缩略图并保存到磁盘
 	err = graphics.ImageResizeSaveFile(subImg,175,230,filePath)
 
@@ -306,7 +313,11 @@ func (c *BookController) UploadCover()  {
 		c.JsonResult(500,"保存图片失败")
 	}
 
-	url := "/" + filePath
+	url := "/" +  strings.Replace(strings.TrimPrefix(filePath,commands.WorkingDirectory),"\\","/",-1)
+
+	if strings.HasPrefix(url,"//") {
+		url = string(url[1:])
+	}
 
 	old_cover := book.Cover
 
@@ -508,7 +519,7 @@ func (c *BookController) Release() {
 
 	book_id := 0
 
-	if c.Member.Role == conf.MemberSuperRole {
+	if c.Member.IsAdministrator() {
 		book,err := models.NewBook().FindByFieldFirst("identify",identify)
 		if err != nil {
 
@@ -550,21 +561,32 @@ func (c *BookController) SaveSort() {
 		c.Abort("404")
 	}
 
-	bookResult,err := models.NewBookResult().FindByIdentify(identify,c.Member.MemberId)
+	book_id := 0
+	if c.Member.IsAdministrator() {
+		book,err := models.NewBook().FindByFieldFirst("identify",identify)
+		if err != nil {
 
-	if err != nil {
-		beego.Error("DocumentController.Edit => ",err)
+		}
+		book_id = book.BookId
+	}else{
+		bookResult,err := models.NewBookResult().FindByIdentify(identify,c.Member.MemberId)
+		if err != nil {
+			beego.Error("DocumentController.Edit => ",err)
 
-		c.Abort("403")
+			c.Abort("403")
+		}
+		if bookResult.RoleId == conf.BookObserver {
+			c.JsonResult(6002,"项目不存在或权限不足")
+		}
+		book_id = bookResult.BookId
 	}
-	if bookResult.RoleId == conf.BookObserver {
-		c.JsonResult(6002,"项目不存在或权限不足")
-	}
+
+
 	content := c.Ctx.Input.RequestBody
 
 	var docs []map[string]interface{}
 
-	err = json.Unmarshal(content,&docs)
+	err := json.Unmarshal(content,&docs)
 
 	if err != nil {
 		beego.Error(err)
@@ -578,7 +600,7 @@ func (c *BookController) SaveSort() {
 				beego.Error(err)
 				continue;
 			}
-			if doc.BookId != bookResult.BookId {
+			if doc.BookId != book_id {
 				logs.Info("%s","权限错误")
 				continue;
 			}
@@ -593,7 +615,7 @@ func (c *BookController) SaveSort() {
 				continue
 			}
 			if parent_id > 0 {
-				if parent,err := models.NewDocument().Find(int(parent_id)); err != nil || parent.BookId != bookResult.BookId {
+				if parent,err := models.NewDocument().Find(int(parent_id)); err != nil || parent.BookId != book_id {
 					continue
 				}
 			}

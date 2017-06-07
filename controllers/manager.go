@@ -18,11 +18,16 @@ type ManagerController struct {
 	BaseController
 }
 
-func (c *ManagerController) Index() {
-	c.TplName = "manager/index.tpl"
+func (c *ManagerController) Prepare (){
+	c.BaseController.Prepare()
+
 	if !c.Member.IsAdministrator() {
 		c.Abort("403")
 	}
+}
+
+func (c *ManagerController) Index() {
+	c.TplName = "manager/index.tpl"
 
 	c.Data["Model"] = models.NewDashboard().Query()
 }
@@ -31,10 +36,6 @@ func (c *ManagerController) Index() {
 func (c *ManagerController) Users() {
 	c.Prepare()
 	c.TplName = "manager/users.tpl"
-
-	if !c.Member.IsAdministrator() {
-		c.Abort("403")
-	}
 
 	pageIndex, _ := c.GetInt("page", 0)
 
@@ -65,9 +66,6 @@ func (c *ManagerController) Users() {
 // 添加用户.
 func (c *ManagerController) CreateMember() {
 	c.Prepare()
-	if !c.Member.IsAdministrator() {
-		c.Abort("403")
-	}
 
 	account := strings.TrimSpace(c.GetString("account"))
 	password1 := strings.TrimSpace(c.GetString("password1"))
@@ -123,10 +121,6 @@ func (c *ManagerController) CreateMember() {
 func (c *ManagerController) UpdateMemberStatus() {
 	c.Prepare()
 
-	if !c.Member.IsAdministrator() {
-		c.Abort("403")
-	}
-
 	member_id, _ := c.GetInt("member_id", 0)
 	status, _ := c.GetInt("status", 0)
 
@@ -141,6 +135,12 @@ func (c *ManagerController) UpdateMemberStatus() {
 	if _, err := member.Find(member_id); err != nil {
 		c.JsonResult(6002, "用户不存在")
 	}
+	if member.MemberId == c.Member.MemberId {
+		c.JsonResult(6004,"不能变更自己的状态")
+	}
+	if member.Role == conf.MemberSuperRole {
+		c.JsonResult(6005,"不能变更超级管理员的状态")
+	}
 	member.Status = status
 
 	if err := member.Update(); err != nil {
@@ -153,10 +153,6 @@ func (c *ManagerController) UpdateMemberStatus() {
 //变更用户权限.
 func (c *ManagerController) ChangeMemberRole() {
 	c.Prepare()
-
-	if !c.Member.IsAdministrator() {
-		c.Abort("403")
-	}
 
 	member_id, _ := c.GetInt("member_id", 0)
 	role, _ := c.GetInt("role", 0)
@@ -171,6 +167,12 @@ func (c *ManagerController) ChangeMemberRole() {
 	if _, err := member.Find(member_id); err != nil {
 		c.JsonResult(6002, "用户不存在")
 	}
+	if member.MemberId == c.Member.MemberId {
+		c.JsonResult(6004,"不能变更自己的权限")
+	}
+	if member.Role == conf.MemberSuperRole {
+		c.JsonResult(6005,"不能变更超级管理员的权限")
+	}
 	member.Role = role
 
 	if err := member.Update(); err != nil {
@@ -179,6 +181,58 @@ func (c *ManagerController) ChangeMemberRole() {
 	}
 	member.ResolveRoleName()
 	c.JsonResult(0, "ok", member)
+}
+
+func (c *ManagerController) EditMember() {
+	c.Prepare()
+	c.TplName = "manager/edit_users.tpl"
+
+	member_id,_ := c.GetInt(":id",0)
+
+	if member_id <= 0 {
+		c.Abort("404")
+	}
+
+	member ,err := models.NewMember().Find(member_id)
+
+	if err != nil {
+		beego.Error(err)
+		c.Abort("404")
+	}
+	if c.Ctx.Input.IsPost() {
+		password1 := c.GetString("password1")
+		password2 := c.GetString("password2")
+		email := c.GetString("email")
+		phone := c.GetString("phone")
+		description := c.GetString("description")
+		member.Email = email
+		member.Phone = phone
+		member.Description = description
+		if password1 != "" && password2 != password1 {
+			c.JsonResult(6001,"确认密码不正确")
+		}
+		if password1 != "" && member.AuthMethod != conf.AuthMethodLDAP{
+			member.Password = password1
+		}
+		if err := member.Valid(password1 == "");err != nil {
+			c.JsonResult(6002,err.Error())
+		}
+		if password1 != "" {
+			password,err := utils.PasswordHash(password1)
+			if err != nil {
+				beego.Error(err)
+				c.JsonResult(6003,"对用户密码加密时出错")
+			}
+			member.Password = password
+		}
+		if err := member.Update();err != nil {
+			beego.Error(err)
+			c.JsonResult(6004,"保存失败")
+		}
+		c.JsonResult(0,"ok")
+	}
+
+	c.Data["Model"] = member
 }
 
 func (c *ManagerController) Books() {
@@ -206,7 +260,10 @@ func (c *ManagerController) Books() {
 
 //编辑项目
 func (c *ManagerController) EditBook() {
+	c.Prepare()
+
 	c.TplName = "manager/edit_book.tpl"
+
 	identify := c.GetString(":key")
 
 	if identify == "" {
@@ -257,9 +314,6 @@ func (c *ManagerController) EditBook() {
 // 删除项目.
 func (c *ManagerController) DeleteBook() {
 	c.Prepare()
-	if !c.Member.IsAdministrator() {
-		c.Abort("403")
-	}
 
 	book_id, _ := c.GetInt("book_id", 0)
 
@@ -282,7 +336,7 @@ func (c *ManagerController) DeleteBook() {
 
 // CreateToken 创建访问来令牌.
 func (c *ManagerController) CreateToken() {
-
+	c.Prepare()
 	action := c.GetString("action")
 
 	identify := c.GetString("identify")
@@ -318,10 +372,6 @@ func (c *ManagerController) CreateToken() {
 func (c *ManagerController) Setting() {
 	c.Prepare()
 	c.TplName = "manager/setting.tpl"
-
-	if !c.Member.IsAdministrator() {
-		c.Abort("403")
-	}
 
 	options, err := models.NewOption().All()
 
@@ -403,9 +453,7 @@ func (c *ManagerController) Comments() {
 //DeleteComment 标记评论为已删除
 func (c *ManagerController) DeleteComment() {
 	c.Prepare()
-	if !c.Member.IsAdministrator() {
-		c.Abort("403")
-	}
+
 	comment_id, _ := c.GetInt("comment_id", 0)
 
 	if comment_id <= 0 {
@@ -428,7 +476,7 @@ func (c *ManagerController) DeleteComment() {
 
 //设置项目私有状态.
 func (c *ManagerController) PrivatelyOwned() {
-
+	c.Prepare()
 	status := c.GetString("status")
 	identify := c.GetString("identify")
 

@@ -12,17 +12,24 @@ import (
 
 //系统安装.
 func Install() {
-	if len(os.Args) >= 2 && os.Args[1] == "install" {
-		fmt.Println("Initializing...")
 
-		err := orm.RunSyncdb("default", false, true)
-		if err == nil {
-			initialization()
-		} else {
-			panic(err.Error())
-			os.Exit(1)
-		}
-		fmt.Println("Install Successfully!")
+	fmt.Println("Initializing...")
+
+	err := orm.RunSyncdb("default", false, true)
+	if err == nil {
+		initialization()
+	} else {
+		panic(err.Error())
+		os.Exit(1)
+	}
+	fmt.Println("Install Successfully!")
+	os.Exit(0)
+
+}
+
+func Version() {
+	if len(os.Args) >= 2 && os.Args[1] == "version" {
+		fmt.Println(conf.VERSION)
 		os.Exit(0)
 	}
 }
@@ -30,30 +37,10 @@ func Install() {
 //初始化数据
 func initialization() {
 
-	o := orm.NewOrm()
-
-	_, err := o.Raw(`INSERT INTO md_options (option_title, option_name, option_value) SELECT '是否启用注册','ENABLED_REGISTER','false' FROM dual WHERE NOT exists(SELECT * FROM md_options WHERE option_name = 'ENABLED_REGISTER');`).Exec()
+	err := models.NewOption().Init()
 
 	if err != nil {
-		panic("ENABLED_REGISTER => " + err.Error())
-		os.Exit(1)
-	}
-	_, err = o.Raw(`INSERT INTO md_options (option_title, option_name, option_value) SELECT '是否启用验证码','ENABLED_CAPTCHA','false' FROM dual WHERE NOT exists(SELECT * FROM md_options WHERE option_name = 'ENABLED_CAPTCHA');`).Exec()
-
-	if err != nil {
-		panic("ENABLED_CAPTCHA => " + err.Error())
-		os.Exit(1)
-	}
-	_, err = o.Raw(`INSERT INTO md_options (option_title, option_name, option_value) SELECT '启用匿名访问','ENABLE_ANONYMOUS','true' FROM dual WHERE NOT exists(SELECT * FROM md_options WHERE option_name = 'ENABLE_ANONYMOUS');`).Exec()
-
-	if err != nil {
-		panic("ENABLE_ANONYMOUS => " + err.Error())
-		os.Exit(1)
-	}
-	_, err = o.Raw(`INSERT INTO md_options (option_title, option_name, option_value) SELECT '站点名称','SITE_NAME','MinDoc' FROM dual WHERE NOT exists(SELECT * FROM md_options WHERE option_name = 'SITE_NAME');`).Exec()
-
-	if err != nil {
-		panic("SITE_NAME => " + err.Error())
+		panic(err.Error())
 		os.Exit(1)
 	}
 
@@ -63,6 +50,7 @@ func initialization() {
 		member.Account = "admin"
 		member.Avatar = "/static/images/headimgurl.jpg"
 		member.Password = "123456"
+		member.AuthMethod = "local"
 		member.Role = 0
 		member.Email = "admin@iminho.me"
 

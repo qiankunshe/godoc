@@ -5,6 +5,7 @@ import (
 	"os"
 	"fmt"
 	"path/filepath"
+	"io"
 )
 
 func AbsolutePath(p string) (string,error) {
@@ -23,3 +24,29 @@ func AbsolutePath(p string) (string,error) {
 	}
 	return s,nil
 }
+
+// FileExists reports whether the named file or directory exists.
+func FileExists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
+func CopyFile(dstName, srcName string) (written int64, err error) {
+	src, err := os.Open(srcName)
+	if err != nil {
+		return
+	}
+	defer src.Close()
+	dst, err := os.OpenFile(dstName, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return
+	}
+
+	defer dst.Close()
+	return io.Copy(dst, src)
+}
+

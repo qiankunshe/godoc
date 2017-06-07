@@ -1,12 +1,14 @@
+//数据库模型.
 package models
 
 import (
 	"time"
 
+	"os"
+
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	"github.com/lifei6671/godoc/conf"
-	"os"
-	"github.com/astaxie/beego"
 )
 
 // Attachment struct .
@@ -56,7 +58,7 @@ func (m *Attachment) Update() error {
 func (m *Attachment) Delete() error {
 	o := orm.NewOrm()
 
-	_,err := o.Delete(m)
+	_, err := o.Delete(m)
 
 	if err == nil {
 		if err1 := os.Remove(m.FilePath); err1 != nil {
@@ -81,6 +83,6 @@ func (m *Attachment) Find(id int) (*Attachment, error) {
 func (m *Attachment) FindListByDocumentId(doc_id int) (attaches []*Attachment, err error) {
 	o := orm.NewOrm()
 
-	_,err = o.QueryTable(m.TableNameWithPrefix()).Filter("document_id",doc_id).OrderBy("-attachment_id").All(&attaches)
+	_, err = o.QueryTable(m.TableNameWithPrefix()).Filter("document_id", doc_id).OrderBy("-attachment_id").All(&attaches)
 	return
 }

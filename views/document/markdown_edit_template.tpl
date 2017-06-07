@@ -17,6 +17,8 @@
         window.editURL = "{{urlfor "DocumentController.Content" ":key" .Model.Identify ":id" ""}}";
         window.releaseURL = "{{urlfor "BookController.Release" ":key" .Model.Identify}}";
         window.sortURL = "{{urlfor "BookController.SaveSort" ":key" .Model.Identify}}";
+        window.historyURL = "{{urlfor "DocumentController.History"}}";
+        window.removeAttachURL = "{{urlfor "DocumentController.RemoveAttachment"}}";
     </script>
     <!-- Bootstrap -->
     <link href="{{cdncss "/static/bootstrap/css/bootstrap.min.css"}}" rel="stylesheet">
@@ -27,6 +29,8 @@
     <link href="{{cdncss "/static/highlight/styles/zenburn.css"}}" rel="stylesheet">
     <link href="{{cdncss "/static/webuploader/webuploader.css"}}" rel="stylesheet">
     <link href="/static/css/markdown.css" rel="stylesheet">
+    <link href="{{cdncss "/static/prettify/themes/atelier-estuary-dark.min.css"}}" rel="stylesheet">
+    <link href="/static/css/markdown.preview.css" rel="stylesheet">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -39,7 +43,7 @@
 <div class="m-manual manual-editor">
     <div class="manual-head" id="editormd-tools">
         <div class="editormd-group">
-            <a href="{{urlfor "BookController.Dashboard" ":key" .Model.Identify}}" data-toggle="tooltip" data-title="返回"><i class="fa fa-chevron-left" aria-hidden="true"></i></a>
+            <a href="{{urlfor "BookController.Index"}}" data-toggle="tooltip" data-title="返回"><i class="fa fa-chevron-left" aria-hidden="true"></i></a>
         </div>
         <div class="editormd-group">
             <a href="javascript:;" id="markdown-save" data-toggle="tooltip" data-title="保存" class="disabled save"><i class="fa fa-save" aria-hidden="true" name="save"></i></a>
@@ -75,12 +79,14 @@
             <a href="javascript:;" data-toggle="tooltip" data-title="添加表格"><i class="fa fa-table item" name="table" unselectable="on"></i></a>
             <a href="javascript:;" data-toggle="tooltip" data-title="引用"><i class="fa fa-quote-right item" name="quote" unselectable="on"></i></a>
             <a href="javascript:;" data-toggle="tooltip" data-title="GFM 任务列表"><i class="fa fa-tasks item" name="tasks" aria-hidden="true"></i></a>
-            <a href="javascript:;" data-toggle="tooltip" data-title="附件"><i class="fa fa-paperclip last" aria-hidden="true" name="attachment"></i></a>
+            <a href="javascript:;" data-toggle="tooltip" data-title="附件"><i class="fa fa-paperclip item" aria-hidden="true" name="attachment"></i></a>
+            <a href="javascript:;" data-toggle="tooltip" data-title="模板"><i class="fa fa-tachometer last" name="template"></i></a>
+
         </div>
 
         <div class="editormd-group pull-right">
             <a href="javascript:;" data-toggle="tooltip" data-title="关闭实时预览"><i class="fa fa-eye-slash first" name="watch" unselectable="on"></i></a>
-            {{/*<a href="javascript:;" data-toggle="tooltip" data-title="修改历史"><i class="fa fa-history item" name="history" aria-hidden="true"></i></a>*/}}
+            <a href="javascript:;" data-toggle="tooltip" data-title="修改历史"><i class="fa fa-history item" name="history" aria-hidden="true"></i></a>
             <a href="javascript:;" data-toggle="tooltip" data-title="边栏"><i class="fa fa-columns item" aria-hidden="true" name="sidebar"></i></a>
             <a href="javascript:;" data-toggle="tooltip" data-title="使用帮助"><i class="fa fa-question-circle-o last" aria-hidden="true" name="help"></i></a>
         </div>
@@ -103,9 +109,7 @@
                 <div class="nav-plus pull-right" id="btnAddDocument" data-toggle="tooltip" data-title="创建目录" data-direction="right"><i class="fa fa-plus" aria-hidden="true"></i></div>
                 <div class="clearfix"></div>
             </div>
-            <div class="manual-tree" id="sidebar">
-
-            </div>
+            <div class="manual-tree" id="sidebar"> </div>
         </div>
         <div class="manual-editor-container" id="manualEditorContainer">
             <div class="manual-editormd">
@@ -205,60 +209,83 @@
         </form>
     </div>
 </div>
+<!-- Modal -->
+<div class="modal fade" id="documentHistoryModal" tabindex="-1" role="dialog" aria-labelledby="documentHistoryModalModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">文档历史记录</h4>
+            </div>
+            <div class="modal-body text-center" id="historyList">
 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="documentTemplateModal" tabindex="-1" role="dialog" aria-labelledby="请选择模板类型" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modal-title">请选择模板类型</h4>
+            </div>
+            <div class="modal-body template-list">
+                <div class="container">
+                    <div class="section">
+                        <a data-type="normal" href="javascript:;"><i class="fa fa-file-o"></i></a>
+                        <h3><a data-type="normal" href="javascript:;">普通文档</a></h3>
+                        <ul>
+                            <li>默认类型</li>
+                            <li>简单的文本文档</li>
+                        </ul>
+                    </div>
+                    <div class="section">
+                        <a data-type="api" href="javascript:;"><i class="fa fa-file-code-o"></i></a>
+                        <h3><a data-type="api" href="javascript:;">API文档</a></h3>
+                        <ul>
+                            <li>用于API文档速写</li>
+                            <li>支持代码高亮</li>
+                        </ul>
+                    </div>
+                    <div class="section">
+                        <a data-type="code" href="javascript:;"><i class="fa fa-book"></i></a>
+
+                        <h3><a data-type="code" href="javascript:;">数据字典</a></h3>
+                        <ul>
+                            <li>用于数据字典显示</li>
+                            <li>表格支持</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+<template id="template-normal">
+{{template "document/template_normal.tpl"}}
+</template>
+<template id="template-api">
+{{template "document/template_api.tpl"}}
+</template>
+<template id="template-code">
+{{template "document/template_code.tpl"}}
+</template>
 <script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
 <script src="{{cdnjs "/static/vuejs/vue.min.js"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
 <script src="{{cdnjs "/static/webuploader/webuploader.min.js"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/editor.md/editormd.js"}}" type="text/javascript"></script>
-<script type="text/javascript" src="{{cdnjs "/static/layer/layer.js"}}"></script>
+<script src="{{cdnjs "/static/layer/layer.js"}}" type="text/javascript" ></script>
 <script src="{{cdnjs "/static/js/jquery.form.js"}}" type="text/javascript"></script>
-<script type="text/javascript">
-    window.vueApp = new Vue({
-        el : "#attachList",
-        data : {
-            lists : []
-        },
-        delimiters : ['${','}'],
-        methods : {
-            removeAttach : function ($attach_id) {
-                var $this = this;
-                var item = $this.lists.filter(function ($item) {
-                    return $item.attachment_id == $attach_id;
-                });
-
-                if(item && item[0].hasOwnProperty("state")){
-                    $this.lists = $this.lists.filter(function ($item) {
-                        return $item.attachment_id != $attach_id;
-                    });
-                    return;
-                }
-                $.ajax({
-                    url : "{{urlfor "DocumentController.RemoveAttachment"}}",
-                    type : "post",
-                    data : { "attach_id" : $attach_id},
-                    success : function (res) {
-                        console.log(res);
-                        if(res.errcode === 0){
-                            $this.lists = $this.lists.filter(function ($item) {
-                                return $item.attachment_id != $attach_id;
-                            });
-                        }else{
-                            layer.msg(res.message);
-                        }
-                    }
-                });
-            }
-        },
-        watch : {
-            lists : function ($lists) {
-                $("#attachInfo").text(" " + $lists.length + " 个附件")
-            }
-        }
-    });
-
-</script>
 <script src="/static/js/editor.js" type="text/javascript"></script>
 <script src="/static/js/markdown.js" type="text/javascript"></script>
 <script type="text/javascript">

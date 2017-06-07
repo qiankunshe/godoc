@@ -1,6 +1,7 @@
 # MinDoc 简介
 
 [![Build Status](https://travis-ci.org/lifei6671/godoc.svg?branch=master)](https://travis-ci.org/lifei6671/godoc)
+[![Build status](https://ci.appveyor.com/api/projects/status/ik70whjrioyvfy18/branch/master?svg=true)](https://ci.appveyor.com/project/lifei6671/godoc/branch/master)
 
 MinDoc 是一款针对IT团队开发的简单好用的文档管理系统。 
 
@@ -16,11 +17,7 @@ MinDoc 的前身是 SmartWiki 文档系统。SmartWiki 是基于 PHP 框架 lara
 
 **如果你的服务器上没有安装golang程序请手动设置一个环境变量如下：键名为 ZONEINFO，值为MinDoc跟目录下的/lib/time/zoneinfo.zip 。**
 
-**Windows 教程:** [https://github.com/lifei6671/godoc/blob/master/README_WIN.md](docs/README_WIN.md)
-
-**Linux  教程:**  [https://github.com/lifei6671/godoc/blob/master/README_LINUX.md](docs/README_LINUX.md)
-
-**PDF 导出配置教程**  [https://github.com/lifei6671/godoc/blob/master/docs/README_LINUX.md](docs/WKHTMLTOPDF.md)
+更多信息请查看手册： [MinDoc 使用手册](https://github.com/lifei6671/godoc/wiki/MinDoc-%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C)
 
 对于没有Golang使用经验的用户，可以从 [https://github.com/lifei6671/godoc/releases](https://github.com/lifei6671/godoc/releases) 这里下载编译完的程序。
 

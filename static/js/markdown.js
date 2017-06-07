@@ -1,5 +1,3 @@
-
-
 $(function () {
     window.addDocumentModalFormHtml = $(this).find("form").html();
     window.editor = editormd("docEditor", {
@@ -61,10 +59,11 @@ $(function () {
        if(name === "attachment"){
            $("#uploadAttachModal").modal("show");
        }else if(name === "history"){
-
+           window.documentHistory();
        }else if(name === "save"){
             saveDocument(false);
-
+       }else if(name === "template"){
+           $("#documentTemplateModal").modal("show");
        }else if(name === "sidebar"){
             $("#manualCategory").toggle(0,"swing",function () {
 
@@ -126,7 +125,7 @@ $(function () {
      * 加载指定的文档到编辑器中
      * @param $node
      */
-    function loadDocument($node) {
+    window.loadDocument = function($node) {
         var index = layer.load(1, {
             shade: [0.1,'#fff'] //0.1透明度的白色背景
         });
@@ -151,7 +150,7 @@ $(function () {
             layer.close(index);
             layer.msg("文档加载失败");
         });
-    }
+    };
 
     /**
      * 保存文档到服务器
@@ -175,7 +174,6 @@ $(function () {
 
             if(item.id === doc_id){
                 version = item.version;
-                console.log(item)
                 break;
             }
         }
@@ -342,4 +340,17 @@ $(function () {
         loadDocument(selected);
 
     }).on("move_node.jstree",jstree_save);
+
+    $("#documentTemplateModal").on("click",".section>a[data-type]",function () {
+        var $this = $(this).attr("data-type");
+        var body = $("#template-" + $this).html();
+        if (body) {
+            window.isLoad = true;
+            window.editor.clear();
+            window.editor.insertValue(body);
+            window.editor.setCursor({line: 0, ch: 0});
+            resetEditorChanged(true);
+        }
+        $("#documentTemplateModal").modal('hide');
+    });
 });

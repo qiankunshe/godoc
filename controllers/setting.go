@@ -12,6 +12,8 @@ import (
 	"github.com/lifei6671/godoc/models"
 	"github.com/lifei6671/godoc/utils"
 	"github.com/lifei6671/godoc/graphics"
+	"github.com/lifei6671/godoc/conf"
+	"github.com/lifei6671/godoc/commands"
 )
 
 type SettingController struct {
@@ -45,6 +47,9 @@ func (c *SettingController) Password()  {
 	c.TplName = "setting/password.tpl"
 
 	if c.Ctx.Input.IsPost() {
+		if c.Member.AuthMethod == conf.AuthMethodLDAP {
+			c.JsonResult(6009,"当前用户不支持修改密码")
+		}
 		password1 := c.GetString("password1")
 		password2 := c.GetString("password2")
 		password3 := c.GetString("password3")
@@ -111,7 +116,7 @@ func (c *SettingController) Upload() {
 
 	fileName := "avatar_" +  strconv.FormatInt(time.Now().UnixNano(), 16)
 
-	filePath := "uploads/" + time.Now().Format("200601") + "/" + fileName + ext
+	filePath := filepath.Join(commands.WorkingDirectory,"uploads" , time.Now().Format("200601") , fileName + ext)
 
 	path := filepath.Dir(filePath)
 
@@ -132,6 +137,10 @@ func (c *SettingController) Upload() {
 		logs.Error("ImageCopyFromFile => ",err)
 		c.JsonResult(6001,"头像剪切失败")
 	}
+	os.Remove(filePath)
+
+	filePath = filepath.Join(commands.WorkingDirectory,"uploads" , time.Now().Format("200601") , fileName + "_small" + ext)
+
 	err = graphics.ImageResizeSaveFile(subImg,120,120,filePath)
 	//err = graphics.SaveImage(filePath,subImg)
 
@@ -140,12 +149,24 @@ func (c *SettingController) Upload() {
 		c.JsonResult(500,"保存文件失败")
 	}
 
-	url := "/" + filePath
+	url := "/" + strings.Replace(strings.TrimPrefix(filePath,commands.WorkingDirectory),"\\","/",-1)
+	if strings.HasPrefix(url,"//") {
+		url = string(url[1:])
+	}
 
 	if member,err := models.NewMember().Find(c.Member.MemberId);err == nil {
+		avater := member.Avatar
+
 		member.Avatar = url
-		member.Update()
-		c.SetMember(*member)
+		err := member.Update();
+		if err == nil {
+			if strings.HasPrefix(avater,"/uploads/") {
+				os.Remove(filepath.Join(commands.WorkingDirectory,avater))
+			}
+			c.SetMember(*member)
+		}else{
+			c.JsonResult(60001,"保存头像失败")
+		}
 	}
 
 	c.JsonResult(0,"ok",url)

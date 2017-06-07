@@ -492,6 +492,7 @@ textarea{
     background-color: #f9f9f9;
     border: 1px solid #fff;
     cursor: pointer;
+    color: #333;
 }
 .manager .dashboard-item:hover{
     background-color: #563D7C;
@@ -508,7 +509,21 @@ textarea{
     word-wrap: break-word; /* Help out IE10+ with class names */
 }
 
-/**************网站底部样式*************************/
+.pagination-container {
+    margin: 5px auto;
+    text-align: center !important;
+    display: block !important;
+}
+.pagination-container .pagination>li>a,.pagination-container .pagination>li>span{
+    padding: 4px 9px !important;
+}
+.pagination-container .pagination>li>a,.pagination-container  .pagination>li>span{
+    color: #333;
+}
+.pagination-container .pagination>.active>a{
+    color: #fff;
+}
+    /**************网站底部样式*************************/
 .footer{
     color: #777;
     padding: 30px 0;

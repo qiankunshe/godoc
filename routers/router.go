@@ -17,6 +17,7 @@ func init()  {
 
 	beego.Router("/manager", &controllers.ManagerController{},"*:Index")
 	beego.Router("/manager/users", &controllers.ManagerController{},"*:Users")
+	beego.Router("/manager/users/edit/:id", &controllers.ManagerController{},"*:EditMember")
 	beego.Router("/manager/member/create", &controllers.ManagerController{},"post:CreateMember")
 	beego.Router("/manager/member/update-member-status",&controllers.ManagerController{},"post:UpdateMemberStatus")
 	beego.Router("/manager/member/change-member-role", &controllers.ManagerController{},"post:ChangeMemberRole")
@@ -58,6 +59,9 @@ func init()  {
 	beego.Router("/api/:key/delete", &controllers.DocumentController{},"post:Delete")
 	beego.Router("/api/:key/content/?:id",&controllers.DocumentController{},"*:Content")
 
+	beego.Router("/history/get", &controllers.DocumentController{},"get:History")
+	beego.Router("/history/delete", &controllers.DocumentController{},"*:DeleteHistory")
+	beego.Router("/history/restore", &controllers.DocumentController{},"*:RestoreHistory")
 
 	beego.Router("/docs/:key", &controllers.DocumentController{},"*:Index")
 	beego.Router("/docs/:key/:id", &controllers.DocumentController{},"*:Read")

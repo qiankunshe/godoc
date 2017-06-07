@@ -57,6 +57,9 @@ func (c *AccountController) Login()  {
 
 		//如果没有数据
 		if err == nil {
+			member.LastLoginTime = time.Now()
+			member.Update()
+
 			c.SetMember(*member)
 			if strings.EqualFold(is_remember,"yes") {
 				remember.MemberId = member.MemberId
@@ -68,6 +71,7 @@ func (c *AccountController) Login()  {
 				}
 
 			}
+
 			c.JsonResult(0,"ok")
 		}else{
 			logs.Error("用户登录 =>",err)
@@ -168,7 +172,9 @@ func (c *AccountController) FindPassword()  {
 		if member.Status != 0 {
 			c.JsonResult(6007,"账号已被禁用")
 		}
-
+		if member.AuthMethod == conf.AuthMethodLDAP {
+			c.JsonResult(6011,"当前用户不支持找回密码")
+		}
 
 		count,err := models.NewMemberToken().FindSendCount(email,time.Now().Add(-1*time.Hour),time.Now())
 
