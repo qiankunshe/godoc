@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/lifei6671/godoc/conf"
+	"github.com/lifei6671/mindoc/conf"
 )
 
 type DocumentHistory struct {
@@ -50,8 +50,11 @@ func (m *DocumentHistory) TableNameWithPrefix() string {
 func NewDocumentHistory() *DocumentHistory {
 	return &DocumentHistory{}
 }
-func (m *DocumentHistory) Find()  {
+func (m *DocumentHistory) Find(id int) (*DocumentHistory,error) {
+	o := orm.NewOrm()
+	err := o.QueryTable(m.TableNameWithPrefix()).Filter("history_id",id).One(m)
 
+	return m,err
 }
 //清空指定文档的历史.
 func (m *DocumentHistory) Clear(doc_id int) error {

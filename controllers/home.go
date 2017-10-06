@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/lifei6671/godoc/models"
-	"github.com/lifei6671/godoc/utils"
+	"github.com/lifei6671/mindoc/models"
+	"github.com/lifei6671/mindoc/utils"
 	"math"
 )
 
@@ -43,4 +43,11 @@ func (c *HomeController) Index() {
 
 	c.Data["Lists"] = books
 
+	labels ,totalCount,err := models.NewLabel().FindToPager(1,10)
+
+	if err != nil {
+		c.Data["Labels"] = make([]*models.Label,0)
+	}else{
+		c.Data["Labels"] = labels
+	}
 }

@@ -1,12 +1,12 @@
-FROM golang:1.8.1-alpine
+FROM golang:1.8.3-alpine3.6
 
 
-RUN apk add --update bash git make gcc
+RUN apk add --update bash git make gcc g++
 
-ADD . /go/src/github.com/lifei6671/godoc
+ADD . /go/src/github.com/lifei6671/mindoc
 
 
-WORKDIR /go/src/github.com/lifei6671/godoc
+WORKDIR /go/src/github.com/lifei6671/mindoc
 
 RUN chmod +x start.sh
 

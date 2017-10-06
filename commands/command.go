@@ -15,10 +15,10 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	"github.com/lifei6671/gocaptcha"
-	"github.com/lifei6671/godoc/commands/migrate"
-	"github.com/lifei6671/godoc/conf"
-	"github.com/lifei6671/godoc/models"
-	"github.com/lifei6671/godoc/utils"
+	"github.com/lifei6671/mindoc/commands/migrate"
+	"github.com/lifei6671/mindoc/conf"
+	"github.com/lifei6671/mindoc/models"
+	"github.com/lifei6671/mindoc/utils"
 	"log"
 	"encoding/json"
 )
@@ -78,6 +78,7 @@ func RegisterModel() {
 		new(models.MemberToken),
 		new(models.DocumentHistory),
 		new(models.Migration),
+		new(models.Label),
 	)
 	migrate.RegisterMigration()
 }

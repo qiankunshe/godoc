@@ -72,7 +72,8 @@ function getSiblingSort (node) {
         };
     }
     return data;
-};
+}
+
 
 /**
  * 删除一个文档
@@ -134,7 +135,6 @@ function pushDocumentCategory($node) {
         if(item.id === $node.id){
 
             window.documentCategory[index] = $node;
-            console.log( window.documentCategory[index]);
             return;
         }
     }
@@ -219,6 +219,70 @@ window.documentHistory = function() {
         }
     });
 };
+//格式化文件大小
+function formatBytes($size) {
+    var $units = [" B", " KB", " MB", " GB", " TB"];
+
+    for ($i = 0; $size >= 1024 && $i < 4; $i++) $size /= 1024;
+
+    return $size.toFixed(2) + $units[$i];
+}
+
+function uploadImage($id,$callback) {
+    /** 粘贴上传图片 **/
+    document.getElementById($id).addEventListener('paste', function(e) {
+
+        var clipboard = e.clipboardData;
+        for (var i = 0, len = clipboard.items.length; i < len; i++) {
+            if (clipboard.items[i].kind === 'file' || clipboard.items[i].type.indexOf('image') > -1) {
+
+                var imageFile = clipboard.items[i].getAsFile();
+
+                console.log(imageFile)
+                var fileName = Date.parse(new Date());
+
+                switch (imageFile.type){
+                    case "image/png" : fileName += ".png";break;
+                    case "image/jpg" : fileName += ".jpg";break
+                    case "image/jpeg" : fileName += ".jpeg";break;
+                    case "image/gif" : fileName += ".gif";break;
+                    default : layer.msg("不支持的图片格式");return;
+                }
+                var form = new FormData();
+
+                form.append('editormd-image-file', imageFile, fileName);
+
+                var layerIndex = 0;
+
+                $.ajax({
+                    url: window.imageUploadURL,
+                    type: "POST",
+                    dataType: "json",
+                    data: form,
+                    processData: false,
+                    contentType: false,
+                    beforeSend: function() {
+                        layerIndex = $callback('before');
+                    },
+                    error: function() {
+                        layer.close(layerIndex);
+                        $callback('error');
+                        layer.msg("图片上传失败");
+                    },
+                    success: function(data) {
+                        layer.close(layerIndex);
+                        $callback('success', data);
+                        if(data.errcode !== 0){
+                            layer.msg(data.message);
+                        }
+
+                    }
+                });
+                e.preventDefault();
+            }
+        }
+    });
+}
 
 $(function () {
     window.vueApp = new Vue({

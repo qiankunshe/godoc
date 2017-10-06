@@ -105,8 +105,8 @@
     <div class="manual-body">
         <div class="manual-category" id="manualCategory">
             <div class="manual-nav">
-                <div class="nav-item active"><i class="fa fa-bars" aria-hidden="true"></i> 目录</div>
-                <div class="nav-plus pull-right" id="btnAddDocument" data-toggle="tooltip" data-title="创建目录" data-direction="right"><i class="fa fa-plus" aria-hidden="true"></i></div>
+                <div class="nav-item active"><i class="fa fa-bars" aria-hidden="true"></i> 文档</div>
+                <div class="nav-plus pull-right" id="btnAddDocument" data-toggle="tooltip" data-title="创建文档" data-direction="right"><i class="fa fa-plus" aria-hidden="true"></i></div>
                 <div class="clearfix"></div>
             </div>
             <div class="manual-tree" id="sidebar"> </div>
@@ -132,19 +132,19 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myModalLabel">添加目录</h4>
+                <h4 class="modal-title" id="myModalLabel">添加文档</h4>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="col-sm-2 control-label">目录名称 <span class="error-message">*</span></label>
+                    <label class="col-sm-2 control-label">文档名称 <span class="error-message">*</span></label>
                     <div class="col-sm-10">
-                        <input type="text" name="doc_name" id="documentName" placeholder="目录名称" class="form-control"  maxlength="50">
+                        <input type="text" name="doc_name" id="documentName" placeholder="文档名称" class="form-control"  maxlength="50">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-sm-2 control-label">目录标识</label>
+                    <label class="col-sm-2 control-label">文档标识</label>
                     <div class="col-sm-10">
-                        <input type="text" name="doc_identify" id="documentIdentify" placeholder="目录唯一标识" class="form-control" maxlength="50">
+                        <input type="text" name="doc_identify" id="documentIdentify" placeholder="文档唯一标识" class="form-control" maxlength="50">
                         <p style="color: #999;font-size: 12px;">文档标识只能包含小写字母、数字，以及“-”和“_”符号,并且只能小写字母开头</p>
                     </div>
 
@@ -189,7 +189,7 @@
                                 </template>
                                 <template v-else>
                                     <a :href="item.http_path" target="_blank" :title="item.file_name">${item.file_name}</a>
-                                    <span class="text">(${(item.file_size/1024/1024).toFixed(4)}MB)</span>
+                                    <span class="text">(${ formatBytes(item.file_size) })</span>
                                     <span class="error-message">${item.message}</span>
                                     <button type="button" class="btn btn-sm close" @click="removeAttach(item.attachment_id)">
                                         <i class="fa fa-remove" aria-hidden="true"></i>

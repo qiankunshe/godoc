@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"github.com/lifei6671/godoc/conf"
+	"github.com/lifei6671/mindoc/conf"
 )
 
 // Document struct.
@@ -155,7 +155,7 @@ func (m *Document) ReleaseContent(book_id int) {
 func (m *Document) FindListByBookId(book_id int) (docs []*Document, err error) {
 	o := orm.NewOrm()
 
-	_, err = o.QueryTable(m.TableNameWithPrefix()).Filter("book_id", book_id).All(&docs)
+	_, err = o.QueryTable(m.TableNameWithPrefix()).Filter("book_id", book_id).OrderBy("order_sort").All(&docs)
 
 	return
 }

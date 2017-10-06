@@ -21,11 +21,12 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
-	"github.com/lifei6671/godoc/commands"
-	"github.com/lifei6671/godoc/conf"
-	"github.com/lifei6671/godoc/models"
-	"github.com/lifei6671/godoc/utils"
-	"github.com/lifei6671/godoc/utils/wkhtmltopdf"
+	"github.com/lifei6671/mindoc/commands"
+	"github.com/lifei6671/mindoc/conf"
+	"github.com/lifei6671/mindoc/models"
+	"github.com/lifei6671/mindoc/utils"
+	"github.com/lifei6671/mindoc/utils/wkhtmltopdf"
+	"github.com/russross/blackfriday"
 )
 
 //DocumentController struct.
@@ -41,12 +42,9 @@ func isReadable(identify, token string, c *DocumentController) *models.BookResul
 		beego.Error(err)
 		c.Abort("500")
 	}
-	if c.Member != nil && c.Member.IsAdministrator() {
-		bookResult := book.ToBookResult()
-		return bookResult
-	}
+
 	//如果文档是私有的
-	if book.PrivatelyOwned == 1 {
+	if book.PrivatelyOwned == 1 && !c.Member.IsAdministrator() {
 
 		is_ok := false
 
@@ -126,7 +124,7 @@ func (c *DocumentController) Index() {
 	c.Data["Model"] = bookResult
 	c.Data["Result"] = template.HTML(tree)
 	c.Data["Title"] = "概要"
-	c.Data["Content"] = bookResult.Description
+	c.Data["Content"] = template.HTML( blackfriday.MarkdownBasic([]byte(bookResult.Description)))
 }
 
 //阅读文档.
@@ -458,7 +456,7 @@ func (c *DocumentController) Upload() {
 		attachment.DocumentId = doc_id
 	}
 
-	if strings.EqualFold(ext, ".jpg") || strings.EqualFold(ext, ".jpeg") || strings.EqualFold(ext, "png") || strings.EqualFold(ext, "gif") {
+	if strings.EqualFold(ext, ".jpg") || strings.EqualFold(ext, ".jpeg") || strings.EqualFold(ext, ".png") || strings.EqualFold(ext, ".gif") {
 
 		attachment.HttpPath = "/" + strings.Replace(strings.TrimPrefix(filePath, commands.WorkingDirectory), "\\", "/", -1)
 		if strings.HasPrefix(attachment.HttpPath, "//") {
@@ -766,6 +764,9 @@ func (c *DocumentController) Export() {
 		bookResult = book.ToBookResult()
 	} else {
 		bookResult = isReadable(identify, token, c)
+	}
+	if bookResult.PrivatelyOwned == 0 {
+		//TODO 私有项目禁止导出
 	}
 	docs, err := models.NewDocument().FindListByBookId(bookResult.BookId)
 
@@ -1076,6 +1077,65 @@ func (c *DocumentController) RestoreHistory() {
 		c.JsonResult(6002, "删除失败")
 	}
 	c.JsonResult(0, "ok", doc)
+}
+
+func (c *DocumentController) Compare()  {
+	c.Prepare()
+	c.TplName = "document/compare.tpl"
+	history_id ,_ := strconv.Atoi(c.Ctx.Input.Param(":id"))
+	identify := c.Ctx.Input.Param(":key")
+
+	book_id := 0
+	editor := "markdown"
+
+	//如果是超级管理员则忽略权限判断
+	if c.Member.IsAdministrator() {
+		book, err := models.NewBook().FindByFieldFirst("identify", identify)
+		if err != nil {
+			beego.Error("DocumentController.Compare => ", err)
+			c.Abort("403")
+			return
+		}
+		book_id = book.BookId
+		c.Data["Model"] = book
+		editor = book.Editor
+	} else {
+		bookResult, err := models.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+
+		if err != nil || bookResult.RoleId == conf.BookObserver {
+			beego.Error("FindByIdentify => ", err)
+			c.Abort("403")
+			return
+		}
+		book_id = bookResult.BookId
+		c.Data["Model"] = bookResult
+		editor = bookResult.Editor
+	}
+
+	if history_id <= 0 {
+		c.ShowErrorPage(60002,"参数错误")
+	}
+
+	history,err := models.NewDocumentHistory().Find(history_id)
+	if err != nil {
+		beego.Error("DocumentController.Compare => ",err)
+		c.ShowErrorPage(60003,err.Error())
+	}
+	doc,err := models.NewDocument().Find(history.DocumentId)
+
+	if doc.BookId != book_id {
+		c.ShowErrorPage(60002,"参数错误")
+	}
+	c.Data["HistoryId"] = history_id
+	c.Data["DocumentId"] = doc.DocumentId
+
+	if editor == "markdown" {
+		c.Data["HistoryContent"] = history.Markdown
+		c.Data["Content"] = doc.Markdown
+	}else{
+		c.Data["HistoryContent"] = template.HTML(history.Content)
+		c.Data["Content"] = template.HTML(doc.Content)
+	}
 }
 
 //递归生成文档序列数组.

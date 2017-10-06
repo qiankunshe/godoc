@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/lifei6671/godoc/controllers"
+	"github.com/lifei6671/mindoc/controllers"
 )
 
 func init()  {
@@ -19,15 +19,21 @@ func init()  {
 	beego.Router("/manager/users", &controllers.ManagerController{},"*:Users")
 	beego.Router("/manager/users/edit/:id", &controllers.ManagerController{},"*:EditMember")
 	beego.Router("/manager/member/create", &controllers.ManagerController{},"post:CreateMember")
+	beego.Router("/manager/member/delete", &controllers.ManagerController{},"post:DeleteMember")
 	beego.Router("/manager/member/update-member-status",&controllers.ManagerController{},"post:UpdateMemberStatus")
 	beego.Router("/manager/member/change-member-role", &controllers.ManagerController{},"post:ChangeMemberRole")
 	beego.Router("/manager/books", &controllers.ManagerController{},"*:Books")
 	beego.Router("/manager/books/edit/:key", &controllers.ManagerController{},"*:EditBook")
+	beego.Router("/manager/books/delete", &controllers.ManagerController{},"*:DeleteBook")
 	beego.Router("/manager/comments", &controllers.ManagerController{},"*:Comments")
 	beego.Router("/manager/books/token", &controllers.ManagerController{},"post:CreateToken")
 	beego.Router("/manager/setting",&controllers.ManagerController{},"*:Setting")
 	beego.Router("/manager/books/transfer", &controllers.ManagerController{},"post:Transfer")
 	beego.Router("/manager/books/open", &controllers.ManagerController{},"post:PrivatelyOwned")
+	beego.Router("/manager/attach/list", &controllers.ManagerController{},"*:AttachList")
+	beego.Router("/manager/attach/detailed/:id", &controllers.ManagerController{},"*:AttachDetailed")
+	beego.Router("/manager/attach/delete", &controllers.ManagerController{},"post:AttachDelete")
+
 
 	beego.Router("/setting", &controllers.SettingController{},"*:Index")
 	beego.Router("/setting/password", &controllers.SettingController{},"*:Password")
@@ -58,6 +64,7 @@ func init()  {
 	beego.Router("/api/:key/create",&controllers.DocumentController{},"post:Create")
 	beego.Router("/api/:key/delete", &controllers.DocumentController{},"post:Delete")
 	beego.Router("/api/:key/content/?:id",&controllers.DocumentController{},"*:Content")
+	beego.Router("/api/:key/compare/:id", &controllers.DocumentController{},"*:Compare")
 
 	beego.Router("/history/get", &controllers.DocumentController{},"get:History")
 	beego.Router("/history/delete", &controllers.DocumentController{},"*:DeleteHistory")
@@ -76,5 +83,8 @@ func init()  {
 	beego.Router("/comment/index", &controllers.CommentController{},"*:Index")
 
 	beego.Router("/search",&controllers.SearchController{},"get:Index")
+
+	beego.Router("/tag/:key", &controllers.LabelController{},"get:Index")
+	beego.Router("/tags", &controllers.LabelController{},"get:List")
 }
 

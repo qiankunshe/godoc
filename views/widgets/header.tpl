@@ -1,21 +1,33 @@
 <header class="navbar navbar-static-top navbar-fixed-top manual-header" role="banner">
     <div class="container">
-        <div class="navbar-header col-sm-12 col-md-6 col-lg-5">
-            <a href="/" class="navbar-brand">
+        <div class="navbar-header col-sm-12 col-md-7 col-lg-6">
+            <a href="/" class="navbar-brand" title="{{.SITE_NAME}}">
                 {{if .SITE_TITLE}}
                 {{.SITE_TITLE}}
                 {{else}}
                 {{.SITE_NAME}}
                 {{end}}
             </a>
-            <div class="searchbar pull-left visible-lg-inline-block visible-md-inline-block">
-                <form class="form-inline" action="{{urlfor "SearchController.Index"}}" method="get">
-                    <input class="form-control" name="keyword" type="search" style="width: 230px;" placeholder="请输入关键词..." value="{{.Keyword}}">
-                    <button class="search-btn">
-                        <i class="fa fa-search"></i>
-                    </button>
-                </form>
-            </div>
+            <nav class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a href="{{urlfor "HomeController.Index" }}" title="首页">首页</a>
+                    </li>
+                    <li>
+                        <a href="{{urlfor "LabelController.List" }}" title="标签">标签</a>
+                    </li>
+                </ul>
+                <div class="searchbar pull-left visible-lg-inline-block visible-md-inline-block">
+                    <form class="form-inline" action="{{urlfor "SearchController.Index"}}" method="get">
+                        <input class="form-control" name="keyword" type="search" style="width: 230px;" placeholder="请输入关键词..." value="{{.Keyword}}">
+                        <button class="search-btn">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </nav>
+
+
 
             <div class="btn-group dropdown-menu-right pull-right slidebar visible-xs-inline-block visible-sm-inline-block">
                 <button class="btn btn-default dropdown-toggle hidden-lg" type="button" data-toggle="dropdown"><i class="fa fa-align-justify"></i></button>

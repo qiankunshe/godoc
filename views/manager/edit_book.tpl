@@ -32,6 +32,7 @@
                     <li class="active"><a href="{{urlfor "ManagerController.Books" }}" class="item"><i class="fa fa-book" aria-hidden="true"></i> 项目管理</a> </li>
                     {{/*<li><a href="{{urlfor "ManagerController.Comments" }}" class="item"><i class="fa fa-comments-o" aria-hidden="true"></i> 评论管理</a> </li>*/}}
                     <li><a href="{{urlfor "ManagerController.Setting" }}" class="item"><i class="fa fa-cogs" aria-hidden="true"></i> 配置管理</a> </li>
+                    <li><a href="{{urlfor "ManagerController.AttachList" }}" class="item"><i class="fa fa-cloud-upload" aria-hidden="true"></i> 附件管理</a> </li>
                 </ul>
             </div>
             <div class="page-right">
@@ -165,8 +166,8 @@
 <!-- Delete Book Modal -->
 <div class="modal fade" id="deleteBookModal" tabindex="-1" role="dialog" aria-labelledby="deleteBookModalLabel">
     <div class="modal-dialog" role="document">
-        <form method="post" id="deleteBookForm" action="{{urlfor "BookController.Delete"}}">
-            <input type="hidden" name="identify" value="{{.Model.Identify}}">
+        <form method="post" id="deleteBookForm" action="{{urlfor "ManagerController.DeleteBook"}}">
+            <input type="hidden" name="book_id" value="{{.Model.BookId}}">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>

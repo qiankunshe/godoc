@@ -45,6 +45,18 @@ $(function () {
                     loadDocument($select_node);
                 }
             }
+            uploadImage("docEditor",function ($state, $res) {
+                if($state === "before"){
+                    return layer.load(1, {
+                        shade: [0.1,'#fff'] //0.1透明度的白色背景
+                    });
+                }else if($state === "success"){
+                    if($res.errcode === 0) {
+                        var value = '![](' + $res.url + ')';
+                        window.editor.insertValue(value);
+                    }
+                }
+            });
         },
         onchange : function () {
             resetEditorChanged(true);
@@ -79,6 +91,12 @@ $(function () {
             });
        }else if(name === "release"){
             if(Object.prototype.toString.call(window.documentCategory) === '[object Array]' && window.documentCategory.length > 0){
+                if($("#markdown-save").hasClass('change')) {
+                    var comfirm_result = confirm("编辑内容未保存，需要保存吗？")
+                    if(comfirm_result) {
+                        saveDocument();
+                    }
+                }
                 $.ajax({
                     url : window.releaseURL,
                     data :{"identify" : window.book.identify },

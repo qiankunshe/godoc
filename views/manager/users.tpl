@@ -31,6 +31,7 @@
                     <li><a href="{{urlfor "ManagerController.Books" }}" class="item"><i class="fa fa-book" aria-hidden="true"></i> 项目管理</a> </li>
                     {{/*<li><a href="{{urlfor "ManagerController.Comments" }}" class="item"><i class="fa fa-comments-o" aria-hidden="true"></i> 评论管理</a> </li>*/}}
                     <li><a href="{{urlfor "ManagerController.Setting" }}" class="item"><i class="fa fa-cogs" aria-hidden="true"></i> 配置管理</a> </li>
+                    <li><a href="{{urlfor "ManagerController.AttachList" }}" class="item"><i class="fa fa-cloud-upload" aria-hidden="true"></i> 附件管理</a> </li>
                 </ul>
 
             </div>
@@ -111,13 +112,14 @@
                                             <template v-else>
                                                 <button type="button" class="btn btn-success btn-sm" @click="setMemberStatus(item.member_id,0,$event)" data-loading-text="禁用中...">启用</button>
                                             </template>
+                                            <button type="button" class="btn btn-danger btn-sm" @click="deleteMember(item.member_id,$event)" data-loading-text="删除中">删除</button>
                                         </template>
                                     </td>
                                 </tr>
                                 </tbody>
                             </table>
                         </template>
-                        <nav>
+                        <nav class="pagination-container">
                             {{.PageHtml}}
                         </nav>
                     </div>
@@ -296,6 +298,31 @@
                             }
                         }
                     })
+                },
+                deleteMember : function (id, e) {
+                    var $this = this;
+                    $.ajax({
+                        url : "{{urlfor "ManagerController.DeleteMember"}}",
+                        type : "post",
+                        data : { "id":id },
+                        dataType : "json",
+                        success : function (res) {
+                            if (res.errcode === 0) {
+
+                                for (var index in $this.lists) {
+                                    var item = $this.lists[index];
+                                    if (item.member_id == id) {
+                                        console.log(item);
+                                        $this.lists.splice(index,1);
+                                        break;
+                                    }
+                                }
+                            } else {
+                                alert("操作失败：" + res.message);
+                            }
+                        }
+                    });
+
                 }
             }
         });
